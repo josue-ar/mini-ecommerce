@@ -75,7 +75,15 @@ export class AuthService {
   }
 
   findAll() {
-    return `This action returns all auth`;
+    return this.prisma.user.findMany({
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+        role: true,
+      },
+    });
   }
 
   async refreshToken(refreshToken: string) {
