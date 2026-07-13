@@ -5,16 +5,27 @@
 [circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
 [circleci-url]: https://circleci.com/gh/nestjs/nest
 
-## Project setup
+## Instala los node_modules luego de clonar el proyecto
 
 ```bash
 $ pnpm install
 ```
 
-## Compile and run the project
+## Compila y ejecuta el proyecto
 
 ```bash
 # watch mode
 $ pnpm run start:dev
+```
+## Completa las variables de entorno en el **.env**
+```
+.env.template --> .env
+```
+
+# Ejecuta el archivo docker compose para crear las imagenes de los servicios
+```bash
+docker compose up -d
+```
+
 
 
