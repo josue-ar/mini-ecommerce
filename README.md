@@ -22,7 +22,7 @@ $ pnpm run start:dev
 .env.template --> .env
 ```
 
-# Ejecuta el archivo docker compose para crear las imagenes de los servicios
+## Ejecuta el archivo docker compose para crear las imagenes de los servicios
 ```bash
 docker compose up -d
 ```
