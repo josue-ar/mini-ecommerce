@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateProductDto, UpdateProductDto } from './dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { User } from '@prisma/client';
@@ -17,21 +17,48 @@ export class ProductService {
     return product;
   }
 
-  async findAll() {
-    return await this.prisma.product.findMany();
-  }
-
-  async findOne(id: string) {
-    return await this.prisma.product.findUnique({
-      where: { id },
+  async findAll(limit: number = 10, offset: number = 0) {
+    return await this.prisma.product.findMany({
+      skip: offset,
+      take: limit,
+      orderBy: {
+        createdAt: 'desc',
+      },
     });
   }
 
-  update(id: number, updateProductDto: UpdateProductDto) {
-    return updateProductDto;
+  async findOne(id: string) {
+    const product = await this.prisma.product.findUnique({
+      where: { id },
+    });
+
+    if (!product) {
+      throw new NotFoundException(`Product with id ${id} not found`);
+    }
+
+    return product;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} product`;
+  async update(id: string, updateProductDto: UpdateProductDto) {
+    await this.findOne(id);
+
+    const updatedProduct = await this.prisma.product.update({
+      where: { id },
+      data: {
+        ...updateProductDto,
+      },
+    });
+    return updatedProduct;
+  }
+
+  async remove(id: string) {
+    await this.findOne(id);
+    await this.prisma.product.delete({
+      where: { id },
+    });
+
+    return {
+      message: `Product with id ${id} has been deleted successfully.`,
+    };
   }
 }

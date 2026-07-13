@@ -1,6 +1,5 @@
 import {
   Controller,
-  Get,
   Post,
   Body,
   Res,
@@ -10,7 +9,6 @@ import {
 import { AuthService } from './auth.service';
 import { CreateUserDto, LoginUserDto } from './dto';
 import { Auth, GetUser } from './decorators';
-import { ValidRoles } from './interfaces';
 import type { Request, Response } from 'express';
 import type { User } from '@prisma/client';
 
@@ -74,11 +72,5 @@ export class AuthController {
   logout(@GetUser() user: User, @Res({ passthrough: true }) res: Response) {
     res.clearCookie('refresh_token');
     return this.authService.logout(user.id);
-  }
-
-  @Get('users')
-  @Auth(ValidRoles.ADMIN)
-  findAll() {
-    return this.authService.findAll();
   }
 }

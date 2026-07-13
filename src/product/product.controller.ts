@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   ParseUUIDPipe,
+  Query,
 } from '@nestjs/common';
 import { ProductService } from './product.service';
 import { CreateProductDto, UpdateProductDto } from './dto';
@@ -25,9 +26,11 @@ export class ProductController {
   }
 
   @Get()
-  @Auth()
-  findAll() {
-    return this.productService.findAll();
+  findAll(
+    @Query('limit') limit: number = 10,
+    @Query('offset') offset: number = 0,
+  ) {
+    return this.productService.findAll(limit, offset);
   }
 
   @Get(':id')
@@ -36,12 +39,17 @@ export class ProductController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto) {
-    return this.productService.update(+id, updateProductDto);
+  @Auth(ValidRoles.ADMIN)
+  update(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() updateProductDto: UpdateProductDto,
+  ) {
+    return this.productService.update(id, updateProductDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.productService.remove(+id);
+  @Auth(ValidRoles.ADMIN)
+  remove(@Param('id', ParseUUIDPipe) id: string) {
+    return this.productService.remove(id);
   }
 }
