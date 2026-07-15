@@ -17,14 +17,25 @@ import type { User } from '@prisma/client';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  //Este si es para cualquiera
+  //Estos son para cualquiera
   @Get('profile')
   @Auth()
   getProfile(@GetUser() user: User) {
-    const { password: _, refreshToken: __, ...userData } = user;
+    const { password: _, refreshToken: __, deletedAt: ___, ...userData } = user;
     return userData;
   }
 
+  @Patch('profile')
+  @Auth()
+  updateProfile(@GetUser() user: User, @Body() updateUserDto: UpdateUserDto) {
+    return this.usersService.update(user.id, updateUserDto);
+  }
+
+  @Delete('profile')
+  @Auth()
+  deleteProfile(@GetUser() user: User) {
+    return this.usersService.softDelete(user.id);
+  }
   // Esto solo del admin
   @Get()
   @Auth(ValidRoles.ADMIN)
@@ -39,6 +50,7 @@ export class UsersController {
   }
 
   @Patch(':id')
+  @Auth(ValidRoles.ADMIN)
   update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateUserDto: UpdateUserDto,
@@ -48,6 +60,6 @@ export class UsersController {
 
   @Delete(':id')
   remove(@Param('id', ParseUUIDPipe) id: string) {
-    return this.usersService.remove(id);
+    return this.usersService.softDelete(id);
   }
 }

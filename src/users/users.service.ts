@@ -1,6 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
+import * as bcrypt from 'bcrypt';
+import { UserStatus } from '@prisma/client';
 
 @Injectable()
 export class UsersService {
@@ -16,6 +18,9 @@ export class UsersService {
         createdAt: true,
         updatedAt: true,
       },
+      where: {
+        status: UserStatus.ACTIVE,
+      },
     });
   }
 
@@ -28,16 +33,47 @@ export class UsersService {
       throw new NotFoundException(`User with ID ${id} not found`);
     }
 
-    return user;
+    const { password, refreshToken, deletedAt, ...userData } = user;
+
+    return userData;
   }
 
   async update(id: string, updateUserDto: UpdateUserDto) {
     await this.findOne(id);
-    return updateUserDto;
+
+    const { password, ...restUser } = updateUserDto;
+
+    const updatedUser = await this.prisma.user.update({
+      where: { id },
+      data: {
+        ...restUser,
+        ...(password && {
+          password: await bcrypt.hash(password, 10),
+        }),
+      },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+        photoUrl: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+    return updatedUser;
   }
 
-  async remove(id: string) {
+  async softDelete(id: string) {
     await this.findOne(id);
-    return `This action removes a #${id} user`;
+    await this.prisma.user.update({
+      where: { id },
+      data: {
+        status: UserStatus.INACTIVE,
+        deletedAt: new Date(),
+      },
+    });
+
+    return { message: `User with ID ${id} has been deleted` };
   }
 }

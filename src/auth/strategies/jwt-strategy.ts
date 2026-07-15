@@ -4,6 +4,7 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../prisma/prisma.service';
 import { JwtPayload } from '../interfaces';
+import { UserStatus } from '@prisma/client';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -25,6 +26,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
     if (!user) {
       throw new UnauthorizedException('Invalid token');
+    }
+
+    if (user.status === UserStatus.INACTIVE) {
+      throw new UnauthorizedException('This account is inactive');
     }
 
     return user;

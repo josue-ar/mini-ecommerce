@@ -8,7 +8,7 @@ import * as bcrypt from 'bcrypt';
 import { CreateUserDto, LoginUserDto } from './dto';
 import { JwtPayload } from './interfaces/jwt-payload.interface';
 import { JwtService } from '@nestjs/jwt';
-import { User } from '@prisma/client';
+import { User, UserStatus } from '@prisma/client';
 
 @Injectable()
 export class AuthService {
@@ -53,6 +53,10 @@ export class AuthService {
 
     if (!user) {
       throw new BadRequestException('Invalid credentials');
+    }
+
+    if (user.status === UserStatus.INACTIVE) {
+      throw new UnauthorizedException('This account is inactive');
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);

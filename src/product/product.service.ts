@@ -19,6 +19,11 @@ export class ProductService {
 
   async findAll(limit: number = 10, offset: number = 0) {
     return await this.prisma.product.findMany({
+      where: {
+        user: {
+          status: 'ACTIVE',
+        },
+      },
       skip: offset,
       take: limit,
       orderBy: {

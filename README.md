@@ -11,21 +11,43 @@
 $ pnpm install
 ```
 
+## Completa las variables de entorno en el **.env**
+
+```
+.env.template --> .env
+```
+
+## Ejecuta el archivo docker compose para crear las imagenes de los servicios
+
+```bash
+docker compose up -d
+```
+
+## Ejecuta los comandos para usar prisma
+
+### En este caso ya tiene las dependencias y migraciones
+
+```bash
+pnpm dlx prisma generate
+```
+
+```bash
+pnpm dlx prisma migrate deploy
+```
+
+### En caso de no tener migraciones solo cargar las tablas de la db
+
+```bash
+pnpm dlx prisma generate
+```
+
+```bash
+pnpm dlx prisma db push
+```
+
 ## Compila y ejecuta el proyecto
 
 ```bash
 # watch mode
 $ pnpm run start:dev
 ```
-## Completa las variables de entorno en el **.env**
-```
-.env.template --> .env
-```
-
-## Ejecuta el archivo docker compose para crear las imagenes de los servicios
-```bash
-docker compose up -d
-```
-
-
-

@@ -18,21 +18,21 @@ enum UserStatus {
 }
 
 model User {
-  id        String @id @default(uuid())
-  firstName String @map("first_name")
-  lastName  String @map("last_name")
-  email     String @unique
+  id        String     @id @default(uuid())
+  firstName String     @map("first_name")
+  lastName  String     @map("last_name")
+  email     String     @unique
   password  String
-  photoUrl  String? @map("photo_url")
-  role      Role   @default(USER)
+  photoUrl  String?    @map("photo_url")
+  role      Role       @default(USER)
   status    UserStatus @default(ACTIVE)
 
   products Product[]
 
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
   deletedAt    DateTime? @map("deleted_at")
-  refreshToken String?  @map("refresh_token")
+  refreshToken String?   @map("refresh_token")
 }
 
 model Product {
