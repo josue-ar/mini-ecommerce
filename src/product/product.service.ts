@@ -55,20 +55,46 @@ export class ProductService {
     return product;
   }
 
-  async update(id: string, updateProductDto: UpdateProductDto) {
-    await this.findOne(id);
+  async update(
+    id: string,
+    updateProductDto: UpdateProductDto,
+    file?: Express.Multer.File,
+  ) {
+    const product = await this.findOne(id);
+
+    let imageData = {};
+
+    if (file) {
+      const image = await this.cloudinaryService.uploadImage(file);
+
+      imageData = {
+        imagePublicId: image.public_id,
+        imageUrl: image.secure_url,
+      };
+    }
 
     const updatedProduct = await this.prisma.product.update({
       where: { id },
       data: {
         ...updateProductDto,
+        ...imageData,
       },
     });
+
+    if (file && product.imagePublicId) {
+      await this.cloudinaryService.deleteImage(product.imagePublicId);
+    }
+
     return updatedProduct;
   }
 
   async remove(id: string) {
-    await this.findOne(id);
+    const product = await this.findOne(id);
+
+    if (product.imagePublicId) {
+      await this.cloudinaryService.deleteImage(product.imagePublicId);
+    }
+
     await this.prisma.product.delete({
       where: { id },
     });

@@ -64,11 +64,28 @@ export class ProductController {
 
   @Patch(':id')
   @Auth(ValidRoles.ADMIN)
+  @UseInterceptors(
+    FileInterceptor('image', {
+      limits: {
+        fileSize: 5 * 1024 * 1024, // 5mb
+      },
+      fileFilter: (req, file, callback) => {
+        if (!file.mimetype.startsWith('image/')) {
+          return callback(
+            new BadRequestException('Only image files are allowed'),
+            false,
+          );
+        }
+        callback(null, true);
+      },
+    }),
+  )
   update(
     @Param('id', ParseUUIDPipe) id: string,
+    @UploadedFile() file: Express.Multer.File,
     @Body() updateProductDto: UpdateProductDto,
   ) {
-    return this.productService.update(id, updateProductDto);
+    return this.productService.update(id, updateProductDto, file);
   }
 
   @Delete(':id')
