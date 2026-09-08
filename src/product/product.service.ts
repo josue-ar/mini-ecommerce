@@ -2,16 +2,27 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateProductDto, UpdateProductDto } from './dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { User } from '@prisma/client';
+import { CloudinaryService } from '../cloudinary/cloudinary.service';
 
 @Injectable()
 export class ProductService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly cloudinaryService: CloudinaryService,
+  ) {}
 
-  async create(createProductDto: CreateProductDto, user: User) {
+  async create(
+    createProductDto: CreateProductDto,
+    file: Express.Multer.File,
+    user: User,
+  ) {
+    const image = await this.cloudinaryService.uploadImage(file);
     const product = await this.prisma.product.create({
       data: {
         ...createProductDto,
         userId: user.id,
+        imagePublicId: image.public_id,
+        imageUrl: image.secure_url,
       },
     });
     return product;

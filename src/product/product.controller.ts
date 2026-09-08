@@ -8,12 +8,16 @@ import {
   Delete,
   ParseUUIDPipe,
   Query,
+  UseInterceptors,
+  BadRequestException,
+  UploadedFile,
 } from '@nestjs/common';
 import { ProductService } from './product.service';
 import { CreateProductDto, UpdateProductDto } from './dto';
 import { Auth, GetUser } from '../auth/decorators';
 import type { User } from '@prisma/client';
 import { ValidRoles } from '../auth/interfaces';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('product')
 export class ProductController {
@@ -21,8 +25,28 @@ export class ProductController {
 
   @Post()
   @Auth(ValidRoles.ADMIN)
-  create(@Body() createProductDto: CreateProductDto, @GetUser() user: User) {
-    return this.productService.create(createProductDto, user);
+  @UseInterceptors(
+    FileInterceptor('image', {
+      limits: {
+        fieldSize: 5 * 1024 * 1024, // 5mb
+      },
+      fileFilter: (req, file, callback) => {
+        if (!file.mimetype.startsWith('image/')) {
+          return callback(
+            new BadRequestException('Only image files are allowed'),
+            false,
+          );
+        }
+        callback(null, true);
+      },
+    }),
+  )
+  create(
+    @Body() createProductDto: CreateProductDto,
+    @UploadedFile() file: Express.Multer.File,
+    @GetUser() user: User,
+  ) {
+    return this.productService.create(createProductDto, file, user);
   }
 
   @Get()
