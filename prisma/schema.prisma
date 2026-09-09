@@ -9,6 +9,7 @@ datasource db {
 
 enum Role {
   USER
+  SELLER
   ADMIN
 }
 
@@ -18,16 +19,18 @@ enum UserStatus {
 }
 
 model User {
-  id        String     @id @default(uuid())
-  firstName String     @map("first_name")
-  lastName  String     @map("last_name")
-  email     String     @unique
-  password  String
-  photoUrl  String?    @map("photo_url")
-  role      Role       @default(USER)
-  status    UserStatus @default(ACTIVE)
+  id            String     @id @default(uuid())
+  firstName     String     @map("first_name")
+  lastName      String     @map("last_name")
+  email         String     @unique
+  password      String
+  photoPublicId String?    @map("photo_public_id")
+  photoUrl      String?    @map("photo_url")
+  role          Role       @default(USER)
+  status        UserStatus @default(ACTIVE)
 
   products Product[]
+  cart     Cart?
 
   createdAt    DateTime  @default(now()) @map("created_at")
   updatedAt    DateTime  @updatedAt @map("updated_at")
@@ -47,6 +50,35 @@ model Product {
   user   User   @relation(fields: [userId], references: [id])
   userId String @map("user_id")
 
+  cartItem CartItem[]
+
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
+}
+
+model Cart {
+  id     String @id @default(uuid())
+  userId String @unique @map("user_id")
+
+  user  User       @relation(fields: [userId], references: [id])
+  items CartItem[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+}
+
+model CartItem {
+  id       String @id @default(uuid())
+  quantity Int
+
+  cartId    String @map("cart_id")
+  productId String @map("product_id")
+
+  cart    Cart    @relation(fields: [cartId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([cartId, productId])
 }

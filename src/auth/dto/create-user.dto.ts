@@ -1,8 +1,6 @@
 import {
   IsEmail,
-  IsOptional,
   IsString,
-  IsUrl,
   Matches,
   MaxLength,
   MinLength,
@@ -31,9 +29,4 @@ export class CreateUserDto {
       'The password must have a Uppercase, lowercase letter and a number',
   })
   password: string;
-
-  @IsUrl()
-  @IsString()
-  @IsOptional()
-  photoUrl?: string;
 }

@@ -3,10 +3,14 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { UserStatus } from '@prisma/client';
+import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly cloudinaryService: CloudinaryService,
+  ) {}
 
   async findAll() {
     return await this.prisma.user.findMany({
@@ -38,8 +42,22 @@ export class UsersService {
     return userData;
   }
 
-  async update(id: string, updateUserDto: UpdateUserDto) {
-    await this.findOne(id);
+  async update(
+    id: string,
+    updateUserDto: UpdateUserDto,
+    file?: Express.Multer.File,
+  ) {
+    const user = await this.findOne(id);
+
+    let photoData = {};
+
+    if (file) {
+      const photo = await this.cloudinaryService.uploadImage(file);
+      photoData = {
+        photoPublicId: photo.public_id,
+        photoUrl: photo.secure_url,
+      };
+    }
 
     const { password, ...restUser } = updateUserDto;
 
@@ -50,6 +68,7 @@ export class UsersService {
         ...(password && {
           password: await bcrypt.hash(password, 10),
         }),
+        ...photoData,
       },
       select: {
         id: true,
@@ -57,10 +76,16 @@ export class UsersService {
         lastName: true,
         email: true,
         photoUrl: true,
+        photoPublicId: true,
         createdAt: true,
         updatedAt: true,
       },
     });
+
+    if (file && user.photoPublicId) {
+      await this.cloudinaryService.deleteImage(user.photoPublicId);
+    }
+
     return updatedUser;
   }
 
