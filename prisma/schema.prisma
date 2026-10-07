@@ -18,6 +18,12 @@ enum UserStatus {
   INACTIVE
 }
 
+enum OrderStatus {
+  PENDING
+  PAID
+  CANCELLED
+}
+
 model User {
   id            String     @id @default(uuid())
   firstName     String     @map("first_name")
@@ -31,6 +37,7 @@ model User {
 
   products Product[]
   cart     Cart?
+  order    Order[]
 
   createdAt    DateTime  @default(now()) @map("created_at")
   updatedAt    DateTime  @updatedAt @map("updated_at")
@@ -50,7 +57,8 @@ model Product {
   user   User   @relation(fields: [userId], references: [id])
   userId String @map("user_id")
 
-  cartItem CartItem[]
+  cartItem  CartItem[]
+  orderItem OrderItem[]
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -81,4 +89,31 @@ model CartItem {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   @@unique([cartId, productId])
+}
+
+model Order {
+  id     String      @id @default(uuid())
+  userId String      @map("user_id")
+  status OrderStatus @default(PENDING)
+  total  Float
+
+  user  User        @relation(fields: [userId], references: [id])
+  items OrderItem[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+}
+
+model OrderItem {
+  id        String @id @default(uuid())
+  orderId   String @map("order_id")
+  productId String @map("product_id")
+  quantity  Int
+  price     Float
+
+  order   Order   @relation(fields: [orderId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 }
